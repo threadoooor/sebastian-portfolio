@@ -205,7 +205,9 @@ h1 {
   position: relative;
   overflow: hidden;
   background: #000;
-  max-width: 550px;
+  /* X's dark card stops at 550px. Past that the embed page is white.
+     Keep the visible window inside the card, past the right corner. */
+  max-width: 516px;
   height: 540px;
   transition: height 0.65s ease;
 }
@@ -230,8 +232,8 @@ h1 {
 
 .tweet-frame {
   display: block;
-  width: calc(100% + 40px);
-  margin: -10px 0 -22px -12px;
+  width: calc(100% + 60px);
+  margin: -10px 0 -22px -16px;
   border: 0;
   height: 720px;
   opacity: 0;
@@ -530,6 +532,24 @@ h1 {
 }
 
 .tweet { display: grid; gap: 18px; align-content: start; }
+
+.tweet-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.tweet-stat strong {
+  color: var(--hot);
+  font-family: Syne, sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.tweet-stat span { margin-left: 6px; }
 
 .tweet-note { text-transform: none; letter-spacing: 0; font-size: 13px; }
 

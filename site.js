@@ -87,13 +87,16 @@ const rhythmPosts = [
   { handle: "TradeInRhythm", views: 2804, url: "https://x.com/TradeInRhythm/status/1991537269443031077", tag: "Claimbacks" }
 ];
 
+// Personal posts. Comment counts are reply counts on X, snapshotted 2026-11-02.
+// The 2022 homecoming post has no public view count.
 const tweets = [
-  "https://x.com/threadoor/status/2116238392723919201",
-  "https://x.com/threadoor/status/2093576726567674362",
-  "https://x.com/threadoor/status/2088379269445464157",
-  "https://x.com/threadoor/status/2100764157146492951",
+  { url: "https://x.com/threadoor/status/2116238392723919201", views: 197215, comments: 107 },
+  { url: "https://x.com/threadoor/status/2093576726567674362", views: 673798, comments: 41 },
+  { url: "https://x.com/threadoor/status/2088379269445464157", views: 365351, comments: 178 },
+  { url: "https://x.com/threadoor/status/2100764157146492951", views: 143277, comments: 37 },
   {
     url: "https://x.com/threadoor/status/1541599277360844802",
+    comments: 35,
     note: "Made this on my mom's phone. It spread across meme pages, including @fuckjerry on Instagram."
   }
 ];
@@ -430,11 +433,30 @@ rhythmPosts.forEach(function (post, i) {
   rhythmList.appendChild(tweetCard(post, i === 0));
 });
 
+function tweetStat(value, label) {
+  const pair = document.createElement("span");
+  pair.className = "tweet-stat";
+  const num = document.createElement("strong");
+  num.textContent = formatViews(value);
+  const unit = document.createElement("span");
+  unit.textContent = label;
+  pair.appendChild(num);
+  pair.appendChild(unit);
+  return pair;
+}
+
 const list = document.getElementById("tweet-list");
 tweets.forEach(function (item) {
   const url = typeof item === "string" ? item : item.url;
   const wrap = document.createElement("div");
   wrap.className = "tweet";
+  const stats = document.createElement("p");
+  stats.className = "tweet-stats";
+  if (item.views) stats.appendChild(tweetStat(item.views, "views"));
+  if (item.comments != null) {
+    stats.appendChild(tweetStat(item.comments, item.comments === 1 ? "comment" : "comments"));
+  }
+  if (stats.childNodes.length) wrap.appendChild(stats);
   wrap.appendChild(tweetSlot(url, "@threadoor"));
   if (item.note) {
     const note = document.createElement("p");
