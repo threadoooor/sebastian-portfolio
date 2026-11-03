@@ -579,3 +579,118 @@ function onScroll() {
 onScroll();
 window.addEventListener("scroll", onScroll, { passive: true });
 window.addEventListener("resize", onScroll);
+
+(function gridWaves() {
+  if (reducedMotion()) return;
+  var canvas = document.querySelector(".grid-field");
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext("2d");
+  var amp = 0;
+  var target = 0;
+  var phase = 0;
+  var running = false;
+  var lastFrame = 0;
+  var lastScrollY = window.scrollY;
+  var lastScrollT = performance.now();
+  var width = 0;
+  var height = 0;
+  var dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    if (!running) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (amp < 0.2) {
+      ctx.clearRect(0, 0, width, height);
+      return;
+    }
+    ctx.fillStyle = "#070707";
+    ctx.fillRect(0, 0, width, height);
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.lineWidth = 1;
+    var gap = 72;
+    var step = 18;
+    var x;
+    var y;
+    for (x = -gap; x <= width + gap; x += gap) {
+      ctx.moveTo(x + Math.sin(phase) * amp, 0);
+      for (y = step; y <= height + step; y += step) {
+        ctx.lineTo(
+          x + Math.sin(y * 0.012 + phase) * amp,
+          y + Math.cos(x * 0.01 + phase * 0.7) * amp * 0.28
+        );
+      }
+    }
+    for (y = -gap; y <= height + gap; y += gap) {
+      ctx.moveTo(0, y + Math.cos(phase) * amp * 0.28);
+      for (x = step; x <= width + step; x += step) {
+        ctx.lineTo(
+          x + Math.sin(y * 0.012 + phase) * amp * 0.28,
+          y + Math.cos(x * 0.011 + phase) * amp
+        );
+      }
+    }
+    ctx.stroke();
+  }
+
+  function frame(now) {
+    var dt = Math.min(40, now - lastFrame || 16);
+    lastFrame = now;
+    target *= Math.exp(-dt / 170);
+    amp += (target - amp) * (1 - Math.exp(-dt / 110));
+    if (amp > 0.2) phase += dt * 0.0032;
+    draw();
+    if (amp > 0.2 || target > 0.2) {
+      requestAnimationFrame(frame);
+    } else {
+      amp = 0;
+      target = 0;
+      running = false;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+    }
+  }
+
+  function wake() {
+    if (running) return;
+    running = true;
+    lastFrame = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("scroll", function () {
+    var now = performance.now();
+    var dy = window.scrollY - lastScrollY;
+    var dt = Math.max(8, now - lastScrollT);
+    lastScrollY = window.scrollY;
+    lastScrollT = now;
+    target = Math.max(target, Math.min(16, Math.abs(dy / dt) * 4.2));
+    wake();
+  }, { passive: true });
+
+  window.addEventListener("resize", function () {
+    resize();
+    if (running) draw();
+  });
+  resize();
+})();
+
+(function resumeChip() {
+  var chip = document.getElementById("resume-chip");
+  if (!chip) return;
+  try {
+    if (sessionStorage.getItem("hide-resume-pdf") === "1") chip.classList.add("is-dismissed");
+  } catch (e) {}
+  chip.querySelector(".resume-dismiss").addEventListener("click", function () {
+    chip.classList.add("is-dismissed");
+    try { sessionStorage.setItem("hide-resume-pdf", "1"); } catch (e) {}
+  });
+})();
