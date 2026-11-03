@@ -72,7 +72,7 @@ const launches = [
     posts: [
       { handle: "suekhim", views: 4921099, url: "https://x.com/suekhim/status/2060378988606878147", role: "launch" },
       { handle: "Kawsar_Ai", views: 23675, url: "https://x.com/Kawsar_Ai/status/2060388016934527027", role: "amp" },
-      { handle: "Jason", views: 512251, url: "https://x.com/Jason/status/2060405197965512989", role: "amp" },
+      { handle: "Jason", views: 512251, url: "https://x.com/Jason/status/2060405197965512989", role: "story" },
       { handle: "cgtwts", views: 2697, url: "https://x.com/cgtwts/status/2060415568113779147", role: "amp" },
       { handle: "suekhim", views: 53088, url: "https://x.com/suekhim/status/2060817708631912562", role: "amp" }
     ]
@@ -693,4 +693,24 @@ window.addEventListener("resize", onScroll);
     chip.classList.add("is-dismissed");
     try { sessionStorage.setItem("hide-resume-pdf", "1"); } catch (e) {}
   });
+})();
+
+(function rallyOnScroll() {
+  var video = document.querySelector(".rally-video");
+  if (!video || reducedMotion() || !("IntersectionObserver" in window)) return;
+  var playing = false;
+  var watcher = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+        if (video.ended) video.currentTime = 0;
+        var attempt = video.play();
+        playing = true;
+        if (attempt && attempt.catch) attempt.catch(function () { playing = false; });
+      } else if (playing && entry.intersectionRatio < 0.25) {
+        video.pause();
+        playing = false;
+      }
+    });
+  }, { threshold: [0, 0.25, 0.6, 1] });
+  watcher.observe(video);
 })();
