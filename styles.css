@@ -3,7 +3,7 @@
   --ink: #f3f0e8;
   --muted: #9a958b;
   --line: #2a2a2a;
-  --hot: #ff2d78;
+  --hot: #1d9bf0;
   --square: 28px;
   color-scheme: dark;
 }
@@ -285,6 +285,10 @@ h1 {
   padding: 28px 0 4px;
 }
 
+.doodle:not(.scribble) {
+  animation: bob-down 1.7s ease-in-out infinite;
+}
+
 .scribble {
   align-items: flex-start;
   justify-content: flex-start;
@@ -326,6 +330,7 @@ h1 {
   width: 78px;
   height: 86px;
   margin: -6px 0 0 36px;
+  animation: bob-down 1.7s ease-in-out infinite;
 }
 
 @keyframes write {
@@ -376,12 +381,16 @@ h1 {
     flex: 0 0 auto;
   }
 
-  .scribble.doodle:not(.scribble-right) svg { transform: rotate(-90deg); }
+  .scribble.doodle:not(.scribble-right) svg {
+    transform: rotate(-90deg);
+    animation-name: bob-point-right;
+  }
 
   .scribble-right.doodle svg {
     order: -1;
     margin: 0;
     transform: rotate(90deg);
+    animation-name: bob-point-left;
   }
 }
 
@@ -400,13 +409,11 @@ h1 {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.5s ease-in-out infinite alternate;
 }
 
-.doodle.is-drawn path {
-  animation: draw 1.15s ease forwards;
-}
-
-.doodle.is-drawn path:nth-child(2),
+.doodle path:nth-child(2),
 .scroll-cue path:nth-child(2) {
   animation-delay: 0.18s;
 }
@@ -427,9 +434,19 @@ h1 {
   transition: opacity 0.3s ease;
 }
 
-.scroll-cue path {
-  stroke-dashoffset: 1;
-  animation: draw 1.5s ease-in-out infinite alternate;
+@keyframes bob-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+@keyframes bob-point-right {
+  0%, 100% { transform: rotate(-90deg) translateY(0); }
+  50% { transform: rotate(-90deg) translateY(8px); }
+}
+
+@keyframes bob-point-left {
+  0%, 100% { transform: rotate(90deg) translateY(0); }
+  50% { transform: rotate(90deg) translateY(8px); }
 }
 
 .scroll-cue.is-hidden {
@@ -575,7 +592,7 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scan, .index-item, .doodle path, .scroll-cue, .scroll-cue path { animation: none; }
+  .scan, .index-item, .doodle, .doodle path, .scribble svg, .scroll-cue, .scroll-cue path { animation: none; }
   .doodle path, .scroll-cue path { stroke-dashoffset: 0; }
   .tweet-slot, .tweet-frame, .tweet-fallback { transition: none; }
   .scribble-text { clip-path: none; animation: none; }

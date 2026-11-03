@@ -451,11 +451,6 @@ const doodles = document.querySelectorAll(".doodle");
 if (reducedMotion() || !("IntersectionObserver" in window)) {
   doodles.forEach(function (el) { el.classList.add("is-drawn"); });
 } else {
-  doodles.forEach(function (el) {
-    el.querySelectorAll("path").forEach(function (path) {
-      path.style.strokeDashoffset = "1";
-    });
-  });
   const drawer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (!entry.isIntersecting) return;
