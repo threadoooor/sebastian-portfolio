@@ -193,6 +193,7 @@ h1 {
   margin: 12px 0 18px;
   font-size: min(56px, calc((100vw - 56px) / 11.6));
   max-width: 100%;
+  white-space: nowrap;
 }
 
 .one-word {
