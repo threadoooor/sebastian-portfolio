@@ -499,6 +499,83 @@ function placeCue() {
   if (next) cue.setAttribute("href", "#" + next.id);
 }
 
-placeCue();
-window.addEventListener("scroll", placeCue, { passive: true });
-window.addEventListener("resize", placeCue);
+const scan = document.querySelector(".scan");
+const thread = document.querySelector(".thread");
+
+function scrollProgress() {
+  const root = document.documentElement;
+  const max = root.scrollHeight - root.clientHeight;
+  return max > 0 ? Math.min(1, root.scrollTop / max) : 0;
+}
+
+function placeProgress() {
+  const progress = scrollProgress();
+  scan.style.transform = "scaleX(" + progress + ")";
+  thread.style.setProperty("--p", String(progress));
+  thread.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+}
+
+function scrollToProgress(progress) {
+  const root = document.documentElement;
+  const max = root.scrollHeight - root.clientHeight;
+  const behavior = root.style.scrollBehavior;
+  root.style.scrollBehavior = "auto";
+  window.scrollTo(0, Math.min(1, Math.max(0, progress)) * max);
+  root.style.scrollBehavior = behavior;
+}
+
+function progressFromPointer(event) {
+  const rect = thread.getBoundingClientRect();
+  if (!rect.height) return 0;
+  return (event.clientY - rect.top) / rect.height;
+}
+
+let threadDrag = false;
+
+thread.addEventListener("pointerdown", function (event) {
+  threadDrag = true;
+  thread.classList.add("is-dragging");
+  thread.setPointerCapture(event.pointerId);
+  scrollToProgress(progressFromPointer(event));
+});
+
+thread.addEventListener("pointermove", function (event) {
+  if (!threadDrag) return;
+  scrollToProgress(progressFromPointer(event));
+});
+
+function endThreadDrag() {
+  threadDrag = false;
+  thread.classList.remove("is-dragging");
+}
+
+thread.addEventListener("pointerup", endThreadDrag);
+thread.addEventListener("pointercancel", endThreadDrag);
+
+thread.addEventListener("keydown", function (event) {
+  const root = document.documentElement;
+  const page = root.clientHeight * 0.85;
+  const keys = {
+    ArrowDown: 80,
+    ArrowUp: -80,
+    PageDown: page,
+    PageUp: -page,
+    Home: -root.scrollHeight,
+    End: root.scrollHeight
+  };
+  if (!(event.key in keys)) return;
+  event.preventDefault();
+  const behavior = root.style.scrollBehavior;
+  root.style.scrollBehavior = "auto";
+  window.scrollBy(0, keys[event.key]);
+  root.style.scrollBehavior = behavior;
+});
+
+function onScroll() {
+  placeCue();
+  placeProgress();
+}
+
+onScroll();
+window.addEventListener("scroll", onScroll, { passive: true });
+window.addEventListener("resize", onScroll);
