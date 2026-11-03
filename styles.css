@@ -124,6 +124,40 @@ h1, h2, h3 {
   height: 10px;
 }
 
+.journey {
+  position: fixed;
+  z-index: 16;
+  right: 28px;
+  max-width: 210px;
+  margin: 0;
+  text-align: right;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background: rgba(7, 7, 7, 0.9);
+  padding: 2px 8px 4px;
+}
+
+.journey-chapter,
+.journey-title { display: block; }
+
+.journey-chapter:empty { display: none; }
+
+.journey-chapter {
+  color: var(--hot);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.journey-title {
+  color: var(--hot);
+  font-family: Caveat, cursive;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
 .top {
   position: sticky;
   top: 0;
@@ -288,6 +322,41 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+.amp-fold { display: grid; gap: 14px; }
+
+.amp-fade { position: relative; isolation: isolate; }
+
+.amp-fade .grid {
+  filter: blur(2.5px);
+}
+
+.amp-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 64px;
+  background: linear-gradient(to bottom, rgba(7, 7, 7, 0) 0%, rgba(7, 7, 7, 0.4) 32%, rgba(7, 7, 7, 0.88) 72%, rgba(7, 7, 7, 0.96) 100%);
+}
+
+.amp-fold.is-open .amp-fade .grid {
+  filter: none;
+}
+
+.amp-fold.is-open .amp-veil,
+.amp-fold.is-open .amp-open { display: none; }
+
+.amp-open { display: flex; justify-content: center; }
+
+.amp-rest[hidden] { display: none !important; }
+
+.amp-veil .button {
+  cursor: pointer;
+  font: inherit;
 }
 
 .frame {
@@ -736,20 +805,6 @@ h1 {
 
 .reel-caption { margin: 0; }
 
-.resume-pages {
-  display: grid;
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.resume-pages img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border: 1px solid var(--line);
-  background: #fff;
-}
-
 .roles { display: grid; gap: 0; border-top: 1px solid var(--line); }
 
 .roles article {
@@ -787,6 +842,7 @@ h1 {
   nav { flex: 1 1 100%; min-width: 0; gap: 12px; flex-wrap: wrap; }
   .scroll-cue { left: auto; right: 14px; transform: none; animation-name: bob-side; }
   .thread { bottom: 136px; }
+  .journey { display: none; }
 }
 
 @keyframes bob-side {
@@ -797,6 +853,7 @@ h1 {
   .index-item, .doodle, .doodle path, .scribble svg, .scroll-cue, .scroll-cue path { animation: none; }
   .doodle path, .scroll-cue path { stroke-dashoffset: 0; }
   .tweet-slot, .tweet-frame, .tweet-fallback { transition: none; }
+  .amp-fade .grid { filter: none; }
   .scribble-text { clip-path: none; animation: none; }
   html { scroll-behavior: auto; }
   .closer a { transition: none; }

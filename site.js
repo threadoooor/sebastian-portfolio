@@ -321,6 +321,77 @@ function doodleEl(i) {
   return el;
 }
 
+function alsoBlock(posts) {
+  const more = document.createElement("div");
+  more.className = "band band-rest";
+  more.appendChild(sectionLabel("Also on this launch"));
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  posts.forEach(function (post) { grid.appendChild(tweetCard(post, false)); });
+  more.appendChild(grid);
+  return more;
+}
+
+function viewMoreButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "button";
+  button.textContent = "view more";
+  button.setAttribute("aria-expanded", "false");
+  return button;
+}
+
+function influencerFold(featured, also) {
+  const preview = featured.slice(2, 4).concat(also).slice(0, 2);
+  const shown = featured.slice(0, 2).concat(preview);
+  const extraFeatured = featured.filter(function (post) { return shown.indexOf(post) === -1; });
+  const extraAlso = also.filter(function (post) { return shown.indexOf(post) === -1; });
+  if (!preview.length) {
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    featured.forEach(function (post) { grid.appendChild(tweetCard(post, true)); });
+    return grid;
+  }
+  const fold = document.createElement("div");
+  fold.className = "amp-fold";
+  const clear = document.createElement("div");
+  clear.className = "grid";
+  featured.slice(0, 2).forEach(function (post) { clear.appendChild(tweetCard(post, true)); });
+  fold.appendChild(clear);
+
+  const fade = document.createElement("div");
+  fade.className = "amp-fade";
+  const faded = document.createElement("div");
+  faded.className = "grid";
+  preview.forEach(function (post) { faded.appendChild(tweetCard(post, post.views > VIEW_LINE)); });
+  const veil = document.createElement("div");
+  veil.className = "amp-veil";
+  const button = viewMoreButton();
+  veil.appendChild(button);
+  fade.appendChild(faded);
+  fade.appendChild(veil);
+  fold.appendChild(fade);
+
+  const hidden = document.createElement("div");
+  hidden.className = "amp-rest";
+  hidden.hidden = true;
+  if (extraFeatured.length) {
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    extraFeatured.forEach(function (post) { grid.appendChild(tweetCard(post, true)); });
+    hidden.appendChild(grid);
+  }
+  if (extraAlso.length) hidden.appendChild(alsoBlock(extraAlso));
+  if (hidden.childNodes.length) fold.appendChild(hidden);
+
+  button.addEventListener("click", function () {
+    fold.classList.add("is-open");
+    button.setAttribute("aria-expanded", "true");
+    if (hidden.parentNode) hidden.hidden = false;
+  });
+  return fold;
+}
+
 const launchRoot = document.getElementById("launches");
 const indexList = document.getElementById("launch-index");
 const totalEl = document.getElementById("launch-total");
@@ -331,10 +402,10 @@ launches.forEach(function (launch, i) {
   const story = launch.posts.filter(function (post) { return post.role === "story"; });
   const featured = launch.posts.filter(function (post) {
     return post.role === "amp" && post.views > VIEW_LINE;
-  });
+  }).sort(function (a, b) { return b.views - a.views; });
   const rest = launch.posts.filter(function (post) {
     return post.role === "amp" && post.views <= VIEW_LINE;
-  });
+  }).sort(function (a, b) { return b.views - a.views; });
   launchViews += launchPost.views;
 
   const item = document.createElement("a");
@@ -358,6 +429,8 @@ launches.forEach(function (launch, i) {
   section.className = "launch";
   section.id = "launch-" + (i + 1);
   section.setAttribute("data-mark", "");
+  section.dataset.journey = "launches";
+  section.dataset.journeyName = launch.name;
   const head = document.createElement("header");
   head.className = "launch-head";
   const kicker = document.createElement("p");
@@ -395,24 +468,10 @@ launches.forEach(function (launch, i) {
     placeNote(top, tweetCard(launchPost, true), launch.note, i);
   }
   if (featured.length) {
-    top.appendChild(sectionLabel("Influencer posts over 50,000 views"));
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    featured.forEach(function (post) { grid.appendChild(tweetCard(post, true)); });
-    top.appendChild(grid);
+    top.appendChild(sectionLabel("amplification"));
   }
+  if (featured.length || rest.length) top.appendChild(influencerFold(featured, rest));
   section.appendChild(top);
-
-  if (rest.length) {
-    const more = document.createElement("div");
-    more.className = "band band-rest";
-    more.appendChild(sectionLabel("Also on this launch"));
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    rest.forEach(function (post) { grid.appendChild(tweetCard(post, false)); });
-    more.appendChild(grid);
-    section.appendChild(more);
-  }
 
   const note = document.createElement("p");
   note.className = "credit";
@@ -501,6 +560,34 @@ function placeCue() {
 
 const scan = document.querySelector(".scan");
 const thread = document.querySelector(".thread");
+const journey = document.querySelector(".journey");
+const journeyChapter = journey.querySelector(".journey-chapter");
+const journeyTitle = journey.querySelector(".journey-title");
+
+function placeJourney() {
+  const marks = document.querySelectorAll("[data-journey]");
+  const line = window.scrollY + Math.min(window.innerHeight * 0.38, 320);
+  let current = null;
+  marks.forEach(function (mark) {
+    const top = mark.getBoundingClientRect().top + window.scrollY;
+    if (top <= line) current = mark;
+  });
+  const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+  if (atEnd && marks.length) current = marks[marks.length - 1];
+  if (!current) {
+    journey.hidden = true;
+    return;
+  }
+  const name = current.dataset.journeyName || "";
+  journeyChapter.textContent = name ? "launches" : "";
+  journeyTitle.textContent = name || current.dataset.journey;
+  journey.hidden = false;
+  const edgeTop = 14;
+  const edgeBottom = window.innerWidth <= 860 ? 136 : 14;
+  const travel = Math.max(1, window.innerHeight - edgeTop - edgeBottom);
+  const y = edgeTop + scrollProgress() * travel;
+  journey.style.top = Math.max(78, Math.min(window.innerHeight - edgeBottom - 36, y)) + "px";
+}
 
 function scrollProgress() {
   const root = document.documentElement;
@@ -574,6 +661,7 @@ thread.addEventListener("keydown", function (event) {
 function onScroll() {
   placeCue();
   placeProgress();
+  placeJourney();
 }
 
 onScroll();
